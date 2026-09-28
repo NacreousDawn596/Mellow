@@ -1,0 +1,15 @@
+services:
+  mellow:
+    build: .
+    container_name: mellow
+    # Host networking: the container shares the host's network stack, so DNS
+    # always matches whatever the host is currently using (WiFi/VPN) — no
+    # Docker bridge-DNS staleness when the resolver changes. Linux only.
+    network_mode: host
+    environment:
+      APP_PORT: "17432"
+      LOG_LEVEL: "info"
+      # Provide your YouTube Data API v3 key via one of these:
+      # YOUTUBE_API_KEY: "your-plain-key"
+      # YOUTUBE_API_KEY_B64: "base64-encoded-key"
+    restart: unless-stopped
