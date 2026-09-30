@@ -17,8 +17,6 @@ else
 fi
 echo "==> platform: $PLATFORM"
 
-PIP_ARGS=""
-
 case "$PLATFORM" in
   termux)
     pkg update -y
@@ -27,13 +25,11 @@ case "$PLATFORM" in
   alpine)
     apk update
     apk add --no-cache python3 py3-pip nodejs npm
-    PIP_ARGS="--break-system-packages"
     ;;
   apt)
     if command -v sudo >/dev/null 2>&1; then SUDO="sudo"; else SUDO=""; fi
     $SUDO apt-get update
     $SUDO apt-get install -y python3 python3-pip python3-venv nodejs npm
-    PIP_ARGS="--break-system-packages"
     ;;
 esac
 
@@ -43,11 +39,13 @@ for c in python3 python; do
   if command -v "$c" >/dev/null 2>&1; then PY="$c"; break; fi
 done
 [ -z "$PY" ] && { echo "No Python found."; exit 1; }
-echo "==> installing Python deps ($PY)"
-# Try normally first, then fall back to --break-system-packages (Alpine/Debian
-# "externally managed" environments, and some Termux setups).
-"$PY" -m pip install $PIP_ARGS -r backend/requirements.txt 2>/dev/null \
-  || "$PY" -m pip install --break-system-packages -r backend/requirements.txt
+echo "==> creating virtualenv + installing Python deps ($PY)"
+# A venv sidesteps every distro's "externally managed" / PEP 668 pip
+# restrictions (Debian/Ubuntu) and works identically on Alpine (iSH) and
+# Termux — no --break-system-packages needed anywhere.
+"$PY" -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install -r backend/requirements.txt
 
 # ---------------------------------------------------------------- frontend
 echo "==> building frontend (first build is the slow part)"

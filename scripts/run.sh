@@ -11,11 +11,10 @@ if [ ! -f frontend/dist/index.html ]; then
   (cd frontend && npm install && npm run build)
 fi
 
-PY=""
-for c in python3 python; do
-  if command -v "$c" >/dev/null 2>&1; then PY="$c"; break; fi
-done
-[ -z "$PY" ] && { echo "No Python found. Run ./scripts/setup.sh first."; exit 1; }
+PY="$ROOT/.venv/bin/python"
+if [ ! -x "$PY" ]; then
+  echo "No virtualenv found. Run ./scripts/setup.sh first."; exit 1
+fi
 
 APP_PORT="${APP_PORT:-17432}"
 echo "==> Mellow → http://localhost:${APP_PORT}  (LAN: $(hostname -I 2>/dev/null | awk '{print $1}'):${APP_PORT})"
